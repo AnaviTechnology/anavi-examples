@@ -1,8 +1,8 @@
 #include <wiringPi.h>
 #include <stdio.h>
 
-//Pin 31 on Raspberry Pi corresponds to BCM GPIO 6 and wiringPi pin 22
-#define RelayPin 22
+//Pin 29 on Raspberry Pi corresponds to BCM GPIO 5 and wiringPi pin 21
+#define RelayPin 21
 
 int main(void)
 {
