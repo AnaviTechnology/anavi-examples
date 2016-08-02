@@ -1,28 +1,41 @@
 #include <wiringPi.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
 
-//Pin 29 on Raspberry Pi corresponds to BCM GPIO 5 and wiringPi pin 21
-#define BeepPin 21
+//Pin 31 on Raspberry Pi corresponds to BCM GPIO 6 and wiringPi pin 22
+#define BeepPin 22
+
+void close()
+{
+	printf("\nTurning off buzzer...\n");
+	digitalWrite(BeepPin, LOW);
+	exit(0);
+}
 
 int main(void)
 {
-  if(-1 == wiringPiSetup())
-  {
-      printf("setup wiringPi failed!");
-      return 1;
-  }
+	signal(SIGINT, close);
 
-  //Set GPIO pin
-  pinMode(BeepPin, OUTPUT);
+	if(-1 == wiringPiSetup())
+	{
+			printf("setup wiringPi failed!");
+			return 1;
+	}
 
-  //Play a sound until the user closes the app
-  while(1)
-  {
-    digitalWrite(BeepPin, LOW);
-    delay(2);
-    digitalWrite(BeepPin, HIGH);
-    delay(2);
-  }
+	//Set GPIO pin
+	pinMode(BeepPin, OUTPUT);
 
-  return 0;
+	printf("Press CTRL+C to exit.\n");
+
+	//Play a sound until the user closes the app
+	while(1)
+	{
+		digitalWrite(BeepPin, LOW);
+		delay(2);
+		digitalWrite(BeepPin, HIGH);
+		delay(2);
+	}
+
+	return 0;
 }
