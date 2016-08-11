@@ -21,6 +21,6 @@ int main()
 	}
 
 	printf("RabbitMax Light Sensor\n");
-	printf("Lux: %d \n", lux);
+	printf("Light: %d Lux\n", lux);
 	return 0;
 }
