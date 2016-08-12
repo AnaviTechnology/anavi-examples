@@ -1,61 +1,51 @@
-/*
-Raspberry Pi Bosch BMP0180/BMP085 communication code.
-
-This is a derivative work based on:
-	John Burns (www.john.geek.nz)
-	Source: https://www.john.geek.nz/2013/02/update-bosch-bmp085-source-raspberry-pi/ 
-	BMP085 Extended Example Code
-	by: Jim Lindblom
-	SparkFun Electronics
-	date: 1/18/11
-	license: CC BY-SA v3.0 - http://creativecommons.org/licenses/by-sa/3.0/
-	Source: http://www.sparkfun.com/tutorial/Barometric/BMP085_Example_Code.pde
-
-Circuit detail:
-	Using BMP180 Board Module
-
-	VIN     - 	3.3V (Raspberry Pi pin 1)
-	GND	-	GND  (Raspberry Pi pin 14)
-	SCL 	-	SCL  (Raspberry Pi pin 5)
-	SDA     - 	SDA  (Raspberry Pi pin 3)
-	
-	Note: Make sure BMP180/085 is connected to 3.3V NOT the 5V pin!
-
-	Note: Change /dev/i2c-1 to /dev/i2c-0 if you are using the very first Raspberry Pi.
-*/
-
 #ifndef _BMP180_H_
 #define _BMP180_H_
 
-#define BMP180_I2C_ADDRESS 0x77
+#include <stdint.h>
 
-// Set default calibration values from values in the datasheet example
-// After that exact values will be read from BMP180/BMP085 sensor
+#define BMP180_I2CADDR 0x77
 
-struct calibrate {
-	short int ac1;
-	short int ac2;
-	short int ac3;
-	unsigned short int ac4;
-	unsigned short int ac5;
-	unsigned short int ac6;
-	short int b1;
-	short int b2;
-	short int mb;
-	short int mc;
-	short int md;
-} cal;
+#define BMP180_ULTRALOWPOWER 0
+#define BMP180_STANDARD      1
+#define BMP180_HIGHRES       2
+#define BMP180_ULTRAHIGHRES  3
+#define BMP180_CAL_AC1           0xAA  // R   Calibration data (16 bits)
+#define BMP180_CAL_AC2           0xAC  // R   Calibration data (16 bits)
+#define BMP180_CAL_AC3           0xAE  // R   Calibration data (16 bits)
+#define BMP180_CAL_AC4           0xB0  // R   Calibration data (16 bits)
+#define BMP180_CAL_AC5           0xB2  // R   Calibration data (16 bits)
+#define BMP180_CAL_AC6           0xB4  // R   Calibration data (16 bits)
+#define BMP180_CAL_B1            0xB6  // R   Calibration data (16 bits)
+#define BMP180_CAL_B2            0xB8  // R   Calibration data (16 bits)
+#define BMP180_CAL_MB            0xBA  // R   Calibration data (16 bits)
+#define BMP180_CAL_MC            0xBC  // R   Calibration data (16 bits)
+#define BMP180_CAL_MD            0xBE  // R   Calibration data (16 bits)
 
-// Calibrate BMP180/BMP085
-int calibration();
+#define BMP180_CONTROL           0xF4
+#define BMP180_TEMPDATA          0xF6
+#define BMP180_PRESSUREDATA      0xF6
+#define BMP180_READTEMPCMD       0x2E
+#define BMP180_READPRESSURECMD   0x34
 
-// Calculate pressure in Pa
-int getPressure();
+int oversampling;
 
-// Calculate temperature in Celsius
-double getTemperature();
+short int ac1, ac2, ac3, b1, b2, mb, mc, md;
+unsigned short int ac4, ac5, ac6;
 
-// Calculate 
-double getAltitude();
+int begin(int fd);
+
+int computeB5(unsigned int UT);
+
+unsigned int readRawTemperature(int fd);
+
+uint32_t readRawPressure(int fd);
+
+int32_t readPressure(int fd);
+
+int32_t readSealevelPressure(int fd, float altitude_meters);
+
+double readTemperature(int fd);
+
+float readAltitude(int fd, float sealevelPressure);
 
 #endif

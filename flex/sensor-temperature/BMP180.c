@@ -1,198 +1,149 @@
-#include <fcntl.h>
-#include <stdlib.h>
-#include <linux/i2c-dev.h>
-#include <linux/i2c.h>
-#include <sys/ioctl.h>
-#include <math.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <wiringPiI2C.h>
+#include <math.h>
 
 #include "BMP180.h"
-#include "smbus.h"
 
-const unsigned char BMP085_OVERSAMPLING_SETTING = 3;
-
-// Open a connection to the bmp085
-// Returns a file id
-int begin()
+int begin(int fd)
 {
-	int fd = 0;
-	char *fileName = "/dev/i2c-1";
-	
-	// Open port for reading and writing
-	if ((fd = open(fileName, O_RDWR)) < 0)
+	oversampling = BMP180_ULTRAHIGHRES;
+
+	if (0x55 != wiringPiI2CReadReg8(fd, 0xD0))
 	{
 		return -1;
 	}
-	
-	// Set the port options and set the address of the device
-	if (ioctl(fd, I2C_SLAVE, BMP180_I2C_ADDRESS) < 0) 
-	{					
-		close(fd);
-		return -1;
-	}
 
-	return fd;
-}
+	// Read calibration data
+	ac1 = i2cReadInt(fd, BMP180_CAL_AC1);
+	ac2 = i2cReadInt(fd, BMP180_CAL_AC2);
+	ac3 = i2cReadInt(fd, BMP180_CAL_AC3);
+	ac4 = i2cReadInt(fd, BMP180_CAL_AC4);
+	ac5 = i2cReadInt(fd, BMP180_CAL_AC5);
+	ac6 = i2cReadInt(fd, BMP180_CAL_AC6);
 
-// Read two words from the BMP085 and supply it as a 16 bit integer
-__s32 i2cReadInt(int fd, __u8 address)
-{
-	__s32 res = i2c_smbus_read_word_data(fd, address);
-	if (0 > res) 
-	{
-		close(fd);
-		return -1;
-	}
+	b1 = i2cReadInt(fd, BMP180_CAL_B1);
+	b2 = i2cReadInt(fd, BMP180_CAL_B2);
 
-	// Convert result to 16 bits and swap bytes
-	res = ((res<<8) & 0xFF00) | ((res>>8) & 0xFF);
+	mb = i2cReadInt(fd, BMP180_CAL_MB);
+	mc = i2cReadInt(fd, BMP180_CAL_MC);
+	md = i2cReadInt(fd, BMP180_CAL_MD);
 
-	return res;
-}
-
-//Write a byte to the BMP085
-int i2cWriteByteData(int fd, __u8 address, __u8 value)
-{
-	if (0 > i2c_smbus_write_byte_data(fd, address, value)) 
-	{
-		close(fd);
-		return -1;
-	}
 	return 0;
 }
 
-// Read a block of data BMP085
-int i2cReadBlockData(int fd, __u8 address, __u8 length, __u8 *values)
+int computeB5(unsigned int UT)
 {
-	if (0 > i2c_smbus_read_i2c_block_data(fd, address,length,values)) 
-	{
-		close(fd);
-		return -1;
-	}
-	return 0;
-}
-
-
-int calibration()
-{
-	int fd = begin();
-	if (0 > fd)
-	{
-		return fd;
-	}
-	cal.ac1 = i2cReadInt(fd,0xAA);
-	if (0 > cal.ac1)
-	{
-		return cal.ac1;
-	}
-	cal.ac2 = i2cReadInt(fd,0xAC);
-	cal.ac3 = i2cReadInt(fd,0xAE);
-	cal.ac4 = i2cReadInt(fd,0xB0);
-	cal.ac5 = i2cReadInt(fd,0xB2);
-	cal.ac6 = i2cReadInt(fd,0xB4);
-	cal.b1 = i2cReadInt(fd,0xB6);
-	cal.b2 = i2cReadInt(fd,0xB8);
-	cal.mb = i2cReadInt(fd,0xBA);
-	cal.mc = i2cReadInt(fd,0xBC);
-	cal.md = i2cReadInt(fd,0xBE);
-	close(fd);
-	return 0;
-}
-
-// Read the uncompensated temperature value
-unsigned int readRawTemperature()
-{
-	int fd = begin();
-
-	// Write 0x2E into Register 0xF4
-	// This requests a temperature reading
-	i2cWriteByteData(fd,0xF4,0x2E);
-	
-	// Wait at least 4.5ms
-	usleep(5000);
-
-	// Read the two byte result from address 0xF6
-	unsigned int ut = i2cReadInt(fd,0xF6);
-
-	// Close the i2c file
-	close (fd);
-	
-	return ut;
-}
-
-// Read the uncompensated pressure value
-unsigned int readRawPressure()
-{
-	int fd = begin();
-
-	// Write 0x34+(BMP085_OVERSAMPLING_SETTING<<6) into register 0xF4
-	// Request a pressure reading w/ oversampling setting
-	i2cWriteByteData(fd,0xF4,0x34 + (BMP085_OVERSAMPLING_SETTING<<6));
-
-	// Wait for conversion, delay time dependent on oversampling setting
-	usleep((2 + (3<<BMP085_OVERSAMPLING_SETTING)) * 1000);
-
-	// Read the three byte result from 0xF6
-	// 0xF6 = MSB, 0xF7 = LSB and 0xF8 = XLSB
-	__u8 values[3];
-	i2cReadBlockData(fd, 0xF6, 3, values);
-
-	unsigned int up = (((unsigned int) values[0] << 16) | ((unsigned int) values[1] << 8) | (unsigned int) values[2]) >> (8-BMP085_OVERSAMPLING_SETTING);
-
-	// Close the i2c file
-	close (fd);
-	
-	return up;
-}
-
-int compensateTemperature()
-{
-	unsigned int ut = readRawTemperature();
-	int x1 = (((int)ut - (int)cal.ac6)*(int)cal.ac5) >> 15;
- 	int x2 = ((int)cal.mc << 11)/(x1 + cal.md);
+	int x1 = (((int)UT - (int)ac6)*(int)ac5) >> 15;
+	int x2 = ((int)mc << 11)/(x1 + md);
 	return x1 + x2;
 }
 
-// Calculate pressure given uncalibrated pressure
-// Value returned will be in units of Pa
-int getPressure()
+unsigned int readRawTemperature(int fd)
 {
-	unsigned int up = readRawPressure();
+	wiringPiI2CWriteReg8(fd, BMP180_CONTROL, BMP180_READTEMPCMD);
+	// Wait at least 4.5ms
+	delay(5);
+	return (unsigned int)i2cReadInt(fd, BMP180_TEMPDATA);
+}
 
-	int b6 = compensateTemperature() - 4000;
-	// Calculate B3
-	int x1 = (cal.b2 * (b6 * b6)>>12)>>11;
-	int x2 = (cal.ac2 * b6)>>11;
-	int x3 = x1 + x2;
-	int b3 = (((((int) cal.ac1)*4 + x3)<<BMP085_OVERSAMPLING_SETTING) + 2)>>2;
-  
-	// Calculate B4
-	x1 = (cal.ac3 * b6)>>13;
-	x2 = (cal.b1 * ((b6 * b6)>>12))>>16;
-	x3 = ((x1 + x2) + 2)>>2;
-	unsigned int b4 = (cal.ac4 * (unsigned int)(x3 + 32768))>>15;
-  
-	unsigned int b7 = ((unsigned int)(up - b3) * (50000>>BMP085_OVERSAMPLING_SETTING));
-	int p = (b7 < 0x80000000) ? (b7<<1)/b4 : (b7/b4)<<1;
-	x1 = (p>>8) * (p>>8);
-	x1 = (x1 * 3038)>>16;
-	x2 = (-7357 * p)>>16;
-	p += (x1 + x2 + 3791)>>4;
-  
+uint32_t readRawPressure(int fd)
+{
+	wiringPiI2CWriteReg8(fd, BMP180_CONTROL, BMP180_READPRESSURECMD + (oversampling << 6));
+
+	if (oversampling == BMP180_ULTRALOWPOWER)
+	{
+		delay(5);
+	}
+	else if (oversampling == BMP180_STANDARD)
+	{
+		delay(8);
+	}
+	else if (oversampling == BMP180_HIGHRES)
+	{
+		delay(14);
+	}
+	else
+	{
+		delay(26);
+	}
+	int raw = i2cReadInt(fd, BMP180_PRESSUREDATA);
+
+	raw <<= 8;
+	raw |= wiringPiI2CReadReg8(fd, BMP180_PRESSUREDATA+2);
+	raw >>= (8 - oversampling);
+
+	return raw;
+}
+
+int32_t readPressure(int fd)
+{
+	int32_t UT, UP, B3, B5, B6, X1, X2, X3, p;
+	uint32_t B4, B7;
+
+	UT = readRawTemperature(fd);
+	UP = readRawPressure(fd);
+
+	B5 = computeB5(UT);
+
+	// do pressure calcs
+	B6 = B5 - 4000;
+	X1 = ((int32_t)b2 * ( (B6 * B6)>>12 )) >> 11;
+	X2 = ((int32_t)ac2 * B6) >> 11;
+	X3 = X1 + X2;
+	B3 = ((((int32_t)ac1*4 + X3) << oversampling) + 2) / 4;
+
+	X1 = ((int32_t)ac3 * B6) >> 13;
+	X2 = ((int32_t)b1 * ((B6 * B6) >> 12)) >> 16;
+	X3 = ((X1 + X2) + 2) >> 2;
+	B4 = ((uint32_t)ac4 * (uint32_t)(X3 + 32768)) >> 15;
+	B7 = ((uint32_t)UP - B3) * (uint32_t)( 50000UL >> oversampling );
+
+	if (B7 < 0x80000000)
+	{
+		p = (B7 * 2) / B4;
+	}
+	else
+	{
+		p = (B7 / B4) * 2;
+	}
+	X1 = (p >> 8) * (p >> 8);
+	X1 = (X1 * 3038) >> 16;
+	X2 = (-7357 * p) >> 16;
+
+	p = p + ((X1 + X2 + (int32_t)3791)>>4);
 	return p;
 }
 
-// Calculate temperature given uncalibrated temperature
-double getTemperature()
+int32_t readSealevelPressure(int fd, float altitude_meters)
 {
-	// Retrieve temperature in units of 0.1 deg C
-	int rawTemperature = ((compensateTemperature() + 8)>>4);  
+	float pressure = readPressure(fd);
+	return (int32_t)(pressure / pow(1.0-altitude_meters/44330, 5.255));
+}
+
+double readTemperature(int fd)
+{
+	unsigned int UT = readRawTemperature(fd);
+	printf("raw temperature: %d\n", UT);
+	int compensate = computeB5(UT);
+	printf("compensate=%d\n", compensate);
+	int rawTemperature = ((compensate + 8)>>4);
+	printf("raw2=%d\n", rawTemperature);
 	return ((double)rawTemperature)/10;
 }
 
-double getAltitude()
+float readAltitude(int fd, float sealevelPressure)
 {
-	double pressure = getPressure();
-	// Sea level pressure: 101325.0
-	return 44330.0 * (1.0 - pow(pressure / 101325.0, (1.0/5.255)));
+	float pressure = readPressure(fd);
+	float altitude = 44330 * (1.0 - pow(pressure /sealevelPressure,0.1903));
+	return altitude;
+}
+
+// Read two words from the BMP085 and supply it as a 16 bit integer
+int i2cReadInt(int fd, int address)
+{
+	int res = wiringPiI2CReadReg16(fd, address);
+	// Convert result to 16 bits and swap bytes
+	res = ((res<<8) & 0xFF00) | ((res>>8) & 0xFF);
+	return res;
 }
