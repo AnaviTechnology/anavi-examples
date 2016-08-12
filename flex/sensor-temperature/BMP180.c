@@ -124,11 +124,8 @@ int32_t readSealevelPressure(int fd, float altitude_meters)
 double readTemperature(int fd)
 {
 	unsigned int UT = readRawTemperature(fd);
-	printf("raw temperature: %d\n", UT);
 	int compensate = computeB5(UT);
-	printf("compensate=%d\n", compensate);
 	int rawTemperature = ((compensate + 8)>>4);
-	printf("raw2=%d\n", rawTemperature);
 	return ((double)rawTemperature)/10;
 }
 
