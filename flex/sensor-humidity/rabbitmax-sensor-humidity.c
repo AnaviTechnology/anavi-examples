@@ -15,8 +15,13 @@ int main()
 	}
 
 	// Retrieve temperature and humidity
-	double temperature = getTemperature(fd);
-	double humidity = getHumidity(fd);
+	double temperature = 0;
+	double humidity = 0;
+	if ( (0 > getHumidity(fd, &humidity)) || (0 > getTemperature(fd, &temperature)) )
+	{
+		fprintf(stderr, "ERROR: RabbitMax humidity sensor not found\n");
+		exit(-1);
+	}
 	
 	// Print temperature and humidity on the screen
 	printf("RabbitMax Humidity and Temperature Sensor\n");
