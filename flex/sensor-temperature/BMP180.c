@@ -1,9 +1,14 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <wiringPiI2C.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "BMP180.h"
+
+// Read two words from the BMP085 and supply it as a 16 bit integer
+int i2cReadInt(int fd, int address);
 
 int begin(int fd)
 {
