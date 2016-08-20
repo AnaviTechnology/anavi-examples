@@ -9,10 +9,14 @@ int main()
 	int fd = wiringPiI2CSetup(BMP180_I2CADDR);
 	if (0 > fd)
 	{
-		fprintf(stderr, "ERROR: Unable to access RabbitMax light sensor: %s\n", strerror (errno));
+		fprintf(stderr, "ERROR: Unable to access RabbitMax temperature sensor: %s\n", strerror (errno));
 		exit(-1);
 	}
-	begin(fd);
+	if (0 > begin(fd))
+	{
+		fprintf(stderr, "ERROR: RabbitMax temperature sensor not found\n");
+		exit(-1);
+	}
 
 	double temperature = readTemperature(fd);
 	double pressure = (double)readPressure(fd) /100;
