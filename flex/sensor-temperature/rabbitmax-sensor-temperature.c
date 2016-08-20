@@ -18,8 +18,11 @@ int main()
 		exit(-1);
 	}
 
-	double temperature = readTemperature(fd);
-	double pressure = (double)readPressure(fd) /100;
+	double temperature = 0;
+	getTemperature(fd, &temperature);
+
+	double pressure = 0;
+	getPressure(fd, &pressure);
 
 	printf("RabbitMax Temperature and Barometric Pressure Sensor\n");
 	printf("Temperature\t%0.1f C\n", temperature);

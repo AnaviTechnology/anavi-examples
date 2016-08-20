@@ -40,11 +40,11 @@ unsigned int readRawTemperature(int fd);
 
 uint32_t readRawPressure(int fd);
 
-int32_t readPressure(int fd);
+int getPressure(int fd, double* pressure);
 
 int32_t readSealevelPressure(int fd, float altitude_meters);
 
-double readTemperature(int fd);
+int getTemperature(int fd, double* temperature);
 
 float readAltitude(int fd, float sealevelPressure);
 

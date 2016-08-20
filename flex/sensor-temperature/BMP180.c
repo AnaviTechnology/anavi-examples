@@ -115,18 +115,25 @@ int32_t readPressure(int fd)
 	return p;
 }
 
+int getPressure(int fd, double* pressure)
+{
+	*pressure = (double) readPressure(fd) / 100;
+	return 0;
+}
+
 int32_t readSealevelPressure(int fd, float altitude_meters)
 {
 	float pressure = readPressure(fd);
 	return (int32_t)(pressure / pow(1.0-altitude_meters/44330, 5.255));
 }
 
-double readTemperature(int fd)
+int getTemperature(int fd, double* temperature)
 {
 	unsigned int UT = readRawTemperature(fd);
 	int compensate = computeB5(UT);
 	int rawTemperature = ((compensate + 8)>>4);
-	return ((double)rawTemperature)/10;
+	*temperature = ((double)rawTemperature)/10;
+	return 0;
 }
 
 float readAltitude(int fd, float sealevelPressure)
