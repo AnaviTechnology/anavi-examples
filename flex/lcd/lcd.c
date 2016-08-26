@@ -5,20 +5,6 @@
 #include <wiringPi.h>
 #include <lcd.h>
 
-int grabCharacter() 
-{
-	struct termios oldt, newt;
-
-	tcgetattr( STDIN_FILENO, &oldt );
-	newt = oldt;
-	newt.c_lflag &= ~( ICANON | ECHO );
-	tcsetattr( STDIN_FILENO, TCSANOW, &newt );
-	int character = getchar();
-	tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
-	return character;
-}
-
-
 int main()
 {
 	wiringPiSetup();
@@ -38,7 +24,5 @@ int main()
 	lcdPuts(lcdHandle, "RabbitMax");
 	lcdPosition (lcdHandle, 0, 1);
 	lcdPuts(lcdHandle, "rabbitmax.com");
-
-	printf("Press any key to continue...\n");
-	grabCharacter();
+	return 0;
 }
