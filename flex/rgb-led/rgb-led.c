@@ -3,11 +3,11 @@
 #include <signal.h>
 #include <stdlib.h>
 
-//Pin 33 on Raspberry Pi corresponds to BCM GPIO 13 and wiringPi pin 21
+//Pin 33 on Raspberry Pi corresponds to BCM GPIO 13 and wiringPi pin 22
 #define Pin0 23
-//Pin 35 on Raspberry Pi corresponds to BCM GPIO 19 and wiringPi pin 21
+//Pin 35 on Raspberry Pi corresponds to BCM GPIO 19 and wiringPi pin 24
 #define Pin1 24
-//Pin 37 on Raspberry Pi corresponds to BCM GPIO 26 and wiringPi pin 21
+//Pin 37 on Raspberry Pi corresponds to BCM GPIO 26 and wiringPi pin 25
 #define Pin2 25
 
 void led(int red, int green, int blue)
