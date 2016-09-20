@@ -18,4 +18,4 @@ starwars: $(OBJ2)
 .PHONY: clean
 
 clean:
-	rm -f beep $(OBJ) 
+	rm -f beep $(OBJ1) starwars $(OBJ2)
