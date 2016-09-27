@@ -13,4 +13,4 @@ rabbitmax-sensor-temperature: $(OBJ)
 .PHONY: clean
 
 clean:
-	rm -f rabbitmax-temperature-sensor $(OBJ)
+	rm -f rabbitmax-sensor-temperature $(OBJ)

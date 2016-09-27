@@ -13,4 +13,4 @@ rabbitmax-light-sensor: $(OBJ)
 .PHONY: clean
 
 clean:
-	rm -f BH1750 $(OBJ)
+	rm -f rabbitmax-light-sensor $(OBJ)
