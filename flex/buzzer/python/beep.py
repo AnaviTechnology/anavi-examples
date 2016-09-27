@@ -19,6 +19,7 @@ signal.signal(signal.SIGINT, close)
 # set up GPIO output channel
 GPIO.setup(BeepPin, GPIO.OUT)
 
+print 'Press CTRL+C to exit.'
 while True:
 	GPIO.output(BeepPin, GPIO.HIGH)
 	time.sleep(0.000002)
