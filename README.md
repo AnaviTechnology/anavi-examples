@@ -28,3 +28,11 @@ Execute the following command to install the required packages for Python develo
 ```
 sudo apt-get install python-dev python-rpi.gpio
 ```
+
+Execute the following commands to download and install Adafruit Python BMP library:
+
+```
+git clone https://github.com/adafruit/Adafruit_Python_BMP.git
+cd Adafruit_Python_BMP
+sudo python setup.py install
+```
