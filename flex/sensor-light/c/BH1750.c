@@ -1,3 +1,4 @@
+#include <wiringPi.h>
 #include <wiringPiI2C.h>
 #include "BH1750.h"
 

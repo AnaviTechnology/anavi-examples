@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <wiringPi.h>
+#include <wiringPiI2C.h>
+#include <string.h>
 
 #include "BH1750.h"
 
