@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <wiringPiI2C.h>
+#include <wiringPi.h>
+#include <string.h>
 
 #include "BMP180.h"
 
