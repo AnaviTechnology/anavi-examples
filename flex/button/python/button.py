@@ -1,14 +1,18 @@
-import RPi.GPIO as GPIO
-import time
+# coding=utf-8
 import signal
 import sys
+import time
 
-#Button - pin 23 on Raspberry Pi corresponds to BCM GPIO 14
+import RPi.GPIO as GPIO
+
+# Button - pin 23 on Raspberry Pi corresponds to BCM GPIO 14
 ButtonPin = 23
 
+
 def close(signal, frame):
-	GPIO.cleanup()
-	sys.exit(0)
+    GPIO.cleanup()
+    sys.exit(0)
+
 
 # to use Raspberry Pi board pin numbers
 GPIO.setmode(GPIO.BOARD)
@@ -19,12 +23,12 @@ GPIO.setup(ButtonPin, GPIO.IN, GPIO.PUD_UP)
 # handle Ctll+C
 signal.signal(signal.SIGINT, close)
 
-print('Press the button and release it after at least a second.');
+print('Press the button and release it after at least a second.')
 
 buf = True
 while True:
-	status = GPIO.input(ButtonPin)
-	if True == status and False == buf:
-		print('Button released!')
-	buf = status
-	time.sleep(1)
+    status = GPIO.input(ButtonPin)
+    if status and not buf:
+        print('Button released!')
+    buf = status
+    time.sleep(1)

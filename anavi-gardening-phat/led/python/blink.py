@@ -1,14 +1,18 @@
-import RPi.GPIO as GPIO
-import time
+# coding=utf-8
 import signal
 import sys
+import time
 
-#Pin 15 on Raspberry Pi corresponds to GPIO 3
+import RPi.GPIO as GPIO
+
+# Pin 15 on Raspberry Pi corresponds to GPIO 3
 LED = 15
 
+
 def close(signal, frame):
-	GPIO.output(LED, 0)
-        sys.exit(0)
+    GPIO.output(LED, 0)
+    sys.exit(0)
+
 
 signal.signal(signal.SIGINT, close)
 
@@ -19,11 +23,13 @@ GPIO.setwarnings(False)
 # set up GPIO output channel
 GPIO.setup(LED, GPIO.OUT)
 
-#reset
+# reset
 
-while True:
-	GPIO.output(LED, 1)
-	time.sleep(0.5)
-	GPIO.output(LED, 0)
-	time.sleep(0.5)
-GPIO.cleanup() 
+try:
+    while True:
+        GPIO.output(LED, 1)
+        time.sleep(0.5)
+        GPIO.output(LED, 0)
+        time.sleep(0.5)
+finally:
+    GPIO.cleanup()
