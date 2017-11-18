@@ -11,6 +11,8 @@ ANAVI Infrared pHAT Raspberry Pi HAT includes:
 * IR photo sensor
 * Slots for up to 3 plug and play I2C sensors
 
+User's manual for ANAVI Infrared pHAT is available at: http://anavi.technology/files/anavi-infrared-phat.pdf
+
 ### Sensors
 
 It is mandatory to enable **I2C** to use any of the sensors supported by ANAVI Infrared pHAT Raspberry Pi HAT.
