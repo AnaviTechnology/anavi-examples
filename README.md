@@ -1,9 +1,9 @@
 # rabbitmax-examples
-Examples for getting started and testing RabbitMax hardware
+Examples for getting started and testing ANAVI hardware
 
-# RabbitMax Flex
+# ANAVI Flex
 
-RabbitMax Flex is an open source hardware Raspberry Pi HAT (add-on board) for rapid prototyping of Internet of Things (IoT) powered by free and open source software. It features:
+ANAVI Flex is an open source hardware Raspberry Pi HAT (add-on board) for rapid prototyping of Internet of Things (IoT) powered by free and open source software. It features:
 
 * IR transmitter (IR LED)
 * IR receiver (IR photo sensor)
@@ -15,7 +15,7 @@ RabbitMax Flex is an open source hardware Raspberry Pi HAT (add-on board) for ra
 * Slots for up to 5 plug and play I2C sensors for temperature, barometric pressure, humidity and light
 * UART (Universal asynchronous receiver/transmitter) pins for debugging
 
-Support the project by backing [RabbitMax Flex IndieGoGo campaign](https://igg.me/at/Rzjuluvxe6Y/10833949).
+Support the project by backing [ANAVI Flex IndieGoGo campaign](https://igg.me/at/Rzjuluvxe6Y/10833949).
 
 # C
 
