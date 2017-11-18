@@ -1,7 +1,9 @@
-import RPi.GPIO as GPIO
+# coding=utf-8
 import time
 
-#Relay - pin 29 on Raspberry Pi corresponds to BCM GPIO 5
+import RPi.GPIO as GPIO
+
+# Relay - pin 29 on Raspberry Pi corresponds to BCM GPIO 5
 RelayPin = 29
 
 # to use Raspberry Pi board pin numbers
@@ -14,4 +16,4 @@ GPIO.setup(RelayPin, GPIO.OUT)
 GPIO.output(RelayPin, GPIO.HIGH)
 time.sleep(3)
 GPIO.output(RelayPin, GPIO.LOW)
-GPIO.cleanup() 
+GPIO.cleanup()
