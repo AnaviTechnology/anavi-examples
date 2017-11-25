@@ -13,6 +13,7 @@ This version is for pigpio version 56+
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <pigpio.h>
+#include <signal.h>
 
 #include "command.h"
 
@@ -21,9 +22,8 @@ This program provides a socket interface to some of
 the commands available from pigpio.
 */
 
-char command_buf[CMD_MAX_EXTENSION];
+int sock = 0;
 char response_buf[CMD_MAX_EXTENSION];
-
 int printFlags = 0;
 
 #define SOCKET_OPEN_FAILED -1
@@ -233,7 +233,7 @@ void getExtensions(int sock, int command, int res)
    }
 }
 
-void setColor(int sock, uint32_t pin, uint32_t value)
+void setColor(uint32_t pin, uint32_t value)
 {
    cmdCmd_t cmd;
    cmd.cmd = PI_CMD_PWM;
@@ -252,26 +252,34 @@ void setColor(int sock, uint32_t pin, uint32_t value)
    printResult(sock, cmdInfo[0].rv, cmd);
 }
 
-
-void setRGB(int sock, uint32_t red, uint32_t green, uint32_t blue)
+void setRGB(uint32_t red, uint32_t green, uint32_t blue)
 {
   /*
    * red - pin 9
    * blue - pin 10
    * green - pin 11
    */
-  setColor(sock, 9, red);
-  setColor(sock, 10, blue);
-  setColor(sock, 11, green);
+  setColor(9, red);
+  setColor(10, blue);
+  setColor(11, green);
+}
+
+void terminate()
+{
+  printf("Turning off the lights...\n");
+  setRGB(0, 0, 0);
+  exit(0);
 }
 
 int main(int argc , char *argv[])
 {
-   int sock = openSocket();
+   sock = openSocket();
    if (SOCKET_OPEN_FAILED == sock)
    {
      fatal("socket connect failed");
    }
+
+   signal(SIGINT, terminate);
 
    //Generate random colors
    time_t t;
@@ -285,14 +293,14 @@ int main(int argc , char *argv[])
      switch(rand() % 2)
      {
        case 0:
-         setRGB(sock, max, min1, min2);
+         setRGB(max, min1, min2);
        break;
        case 1:
-         setRGB(sock, min1, max, min2);
+         setRGB(min1, max, min2);
        break;
        case 2:
        default:
-         setRGB(sock, min1, min2, max);
+         setRGB(min1, min2, max);
        break;
      }
      sleep(1);
