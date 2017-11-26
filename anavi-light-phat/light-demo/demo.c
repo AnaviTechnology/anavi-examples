@@ -41,8 +41,17 @@ void fatal(char *fmt, ...)
    va_end(ap);
 
    fprintf(stderr, "%s\n", buf);
+   fprintf(stderr, "\nPlease, make sure that pigpiod  is running.\n");
+   fprintf(stderr, "Execute the following command to start it:\n\n");
+   fprintf(stderr, "sudo pigpiod\n");
 
    fflush(stderr);
+
+   if (0 <= sock)
+   {
+     close(sock);
+   }
+   exit(1);
 }
 
 static int openSocket(void)
@@ -283,7 +292,7 @@ int main(int argc , char *argv[])
 
    printf("ANAVI Light pHAT Demo\n");
    printf("---------------------\n");
-   printf("Ctrl+C to exit...\n");
+   printf("Press Ctrl+c to exit...\n");
 
    //Generate random colors
    time_t t;
