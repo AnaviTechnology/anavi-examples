@@ -266,7 +266,7 @@ void setRGB(uint32_t red, uint32_t green, uint32_t blue)
 
 void terminate()
 {
-  printf("Turning off the lights...\n");
+  printf("\nTurning off the lights...\n");
   setRGB(0, 0, 0);
   exit(0);
 }
@@ -280,6 +280,10 @@ int main(int argc , char *argv[])
    }
 
    signal(SIGINT, terminate);
+
+   printf("ANAVI Light pHAT Demo\n");
+   printf("---------------------\n");
+   printf("Ctrl+C to exit...\n");
 
    //Generate random colors
    time_t t;
