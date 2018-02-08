@@ -21,8 +21,8 @@ int main()
 	// D3 - pin 21 GPIO9
 	lcdHandle = lcdInit(2, 16, 4, 7, 29, 2, 3, 12, 13, 0, 0, 0, 0);
 	lcdPosition(lcdHandle, 0, 0);
-	lcdPuts(lcdHandle, "RabbitMax");
+	lcdPuts(lcdHandle, "ANAVI");
 	lcdPosition (lcdHandle, 0, 1);
-	lcdPuts(lcdHandle, "rabbitmax.com");
+	lcdPuts(lcdHandle, "anavi.technology");
 	return 0;
 }
