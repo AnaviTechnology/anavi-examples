@@ -15,7 +15,7 @@ int main()
 	// Initialize Serial port
 	cout << endl;
 	cout << "------------------------------------" << endl;
-	cout << "  SparkFun APDS-9960 - GestureTest  " << endl;
+	cout << " APDS-9960 - GestureTest  " << endl;
 	cout << "------------------------------------" << endl;
 
 	// Initialize APDS-9960 (configure I2C and initial values)
