@@ -5,7 +5,7 @@ import time
 
 import RPi.GPIO as GPIO
 
-# Button - pin 23 on Raspberry Pi corresponds to BCM GPIO 14
+# Button - pin 23 on Raspberry Pi corresponds to BCM GPIO 11
 ButtonPin = 23
 
 
