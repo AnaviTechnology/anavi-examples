@@ -74,16 +74,16 @@ while True:
                 release(e.KEY_DOWN)
 		bDown = False
 	if (not bD) and (not GPIO.input(btnA)):
-                hold(e.KEY_X)
+                hold(e.KEY_A)
                 bD = True
 	if bD and GPIO.input(btnA):
-                release(e.KEY_X)
+                release(e.KEY_A)
                 bD = False
 	if (not bF) and (not GPIO.input(btnB)):
-                hold(e.KEY_Y)
+                hold(e.KEY_B)
                 bF = True
 	if bF and GPIO.input(btnB):
-                release(e.KEY_Y)
+                release(e.KEY_B)
                 bF = False
 	if (not bG) and (not GPIO.input(btnSelect)):
 		hold(e.KEY_S)
