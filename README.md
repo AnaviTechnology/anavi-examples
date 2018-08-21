@@ -1,4 +1,5 @@
-# rabbitmax-examples
+# anavi-examples
+
 Examples for getting started and testing ANAVI hardware
 
 ## ANAVI Infrared pHAT
