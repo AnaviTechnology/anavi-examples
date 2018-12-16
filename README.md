@@ -117,6 +117,8 @@ ANAVI Flex is an open source hardware Raspberry Pi HAT (add-on board) for rapid 
 * Slot for modular 16x2 LCD character display
 * Slots for up to 5 plug and play I2C sensors for temperature, barometric pressure, humidity and light
 * UART (Universal asynchronous receiver/transmitter) pins for debugging
+* contrib/ac-toshiba.py - Reads Toshiba AC Remote packets
+* contrib/ir_packet_read.py - Read IR packets and display as binary & hex
 
 Support the project by backing [ANAVI Flex IndieGoGo campaign](https://igg.me/at/Rzjuluvxe6Y/10833949).
 
