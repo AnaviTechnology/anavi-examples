@@ -41,10 +41,6 @@ DHT dht(DHTPIN, DHTTYPE);
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
-// Configure pins
-const int pinAlarm = 16;
-const int pinButton = 0;
-
 // Configure the interval in milliseconds to read data
 // from the sensors and to publish it to thingspeak.com
 // 1 second is 1000milliseconds, for example:
@@ -60,31 +56,35 @@ unsigned long sensorPreviousMillis = 0;
 // specfic DHT22 unit on your board
 const float temperatureCoef = 1;
 
-float dhtTemperature = 0;
-float dhtHumidity = 0;
-float dsTemperature = 0;
+//Configure I2C sensor for light
+const int sensorBH1750 = 0x23;
 
 // For random generation of MQTT client ID
 static const char alphanum[] ="0123456789"
                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                               "abcdefghijklmnopqrstuvwxyz";
 
+String txtTemperature = "";
+String txtHumidity = "";
+String txtWater="";
+String txtLight = "";
+
 void drawDisplay(const char *line1, const char *line2 = "", const char *line3 = "")
 {
-    // Write on OLED display
-    // Clear the internal memory
-    u8g2.clearBuffer();
-    // Set appropriate font
-    u8g2.setFont(u8g2_font_ncenR14_tr);
-    u8g2.drawStr(0,14, line1);
-    u8g2.drawStr(0,39, line2);
-    u8g2.drawStr(0,64, line3);
-    // Transfer internal memory to the display
-    u8g2.sendBuffer();
+  // Write on OLED display
+  // Clear the internal memory
+  u8g2.clearBuffer();
+  // Set appropriate font
+  u8g2.setFont(u8g2_font_ncenR14_tr);
+  u8g2.drawStr(0,14, line1);
+  u8g2.drawStr(0,39, line2);
+  u8g2.drawStr(0,64, line3);
+  // Transfer internal memory to the display
+  u8g2.sendBuffer();
 }
 
-void connectWiFi() {
-
+void connectWiFi()
+{
   delay(10);
   // We start by connecting to a WiFi network
   Serial.println();
@@ -137,31 +137,45 @@ void reconnect()
   }
 }
 
-void setup()
+bool isSensorAvailable(int sensorAddress)
 {
-    // put your setup code here, to run once:
-    Serial.begin(115200);
-    Serial.println();
-    u8g2.begin();
-    dht.begin();
-    sensors.begin();
-
-    delay(10);
-
-    //LED
-    pinMode(pinAlarm, OUTPUT);
-    //Button
-    pinMode(pinButton, INPUT);
-
-    drawDisplay("ANAVI Thermometer");
-
-    connectWiFi();
-    mqttClient.setServer(mqtt_server, 1883);
+  // Check if I2C sensor is present
+  Wire.beginTransmission(sensorAddress);
+  return 0 == Wire.endTransmission();
 }
 
-void mqttpublish(String temperature, String humidity, String water) {
+void sensorWriteData(int i2cAddress, uint8_t data)
+{
+  Wire.beginTransmission(i2cAddress);
+  Wire.write(data);
+  Wire.endTransmission();
+}
+
+String readLight()
+{
+  // Power on sensor
+  sensorWriteData(sensorBH1750, 0x01);
+  // Set mode continuously high resolution mode
+  sensorWriteData(sensorBH1750, 0x10);
+
+  uint16_t tempAmbientLight;
+
+  Wire.requestFrom(sensorBH1750, 2);
+  tempAmbientLight = Wire.read();
+  tempAmbientLight <<= 8;
+  tempAmbientLight |= Wire.read();
+  // s. page 7 of datasheet for calculation
+  tempAmbientLight = tempAmbientLight/1.2;
+
+  char convert[80];
+  sprintf(convert, "%u", tempAmbientLight);
+  return String(convert);
+}
+
+void mqttpublish(String temperature, String humidity, String water, String light)
+{
   // Create data string to send to ThingSpeak
-  String data = String("field1=" + temperature + "&field2=" + humidity+ "&field3=" + water);
+  String data = String("field1=" + temperature + "&field2=" + humidity + "&field3=" + water + "&field4=" + light);
   int length = data.length();
   char msgBuffer[length];
   data.toCharArray(msgBuffer,length+1);
@@ -176,55 +190,81 @@ void mqttpublish(String temperature, String humidity, String water) {
   mqttClient.publish(topicBuffer, msgBuffer);
 }
 
+void setup()
+{
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  Serial.println();
+  u8g2.begin();
+  dht.begin();
+  sensors.begin();
+
+  delay(10);
+
+  drawDisplay("ANAVI Thermometer");
+
+  connectWiFi();
+  mqttClient.setServer(mqtt_server, 1883);
+}
+
 void loop()
 {
-    // Reconnect if MQTT client is not connected.
-    if (!mqttClient.connected()) 
-    {
-      reconnect();
-    }
-  
-    float humidity = dht.readHumidity();
-    float temp = dht.readTemperature();
-    if (isnan(humidity) || isnan(temp))
-    {
-      delay(sensorInterval);
-      return;
-    }
-    
+  // Reconnect if MQTT client is not connected.
+  if (!mqttClient.connected())
+  {
+    reconnect();
+  }
+
+  float humidity = dht.readHumidity();
+  float temp = dht.readTemperature();
+  if (!isnan(humidity) && !isnan(temp))
+  {
     // Adjust temperature depending on the calibration coefficient
     temp = temp*temperatureCoef;
-    dhtTemperature = temp;
-    dhtHumidity = humidity;
     
-    String txtTemperature = String(dhtTemperature, 1);
-    String air="Air "+txtTemperature+"C ";
+    txtTemperature = String(temp, 1);
+    txtHumidity = String(humidity, 0);
+  }
+
+  String air = "";
+  if (0 < txtTemperature.length())
+  {
+    air="Air "+txtTemperature+"C ";
     Serial.println(air);
-    String txtHumidity = String(dhtHumidity, 0);
-    String hum="Humidity "+txtHumidity+"%";
+  }
+
+  String hum = "";
+  if (0 < txtHumidity.length())
+  {
+    hum="Humidity "+txtHumidity+"%";
     Serial.println(hum);
+  }
 
-    String txtWater="";
-    String water="";
-    if (0 < sensors.getDeviceCount())
+  String water="";
+  if (0 < sensors.getDeviceCount())
+  {
+    sensors.requestTemperatures();
+    txtWater = String(sensors.getTempCByIndex(0),1);
+    water="Water "+txtWater+"C";
+    Serial.println(water);
+  }
+  drawDisplay(air.c_str(), hum.c_str(), water.c_str());
+
+  // Publish data to thingspeak.com over MQTT
+  const unsigned long currentMillis = millis();
+  if (publishInterval <= (currentMillis - sensorPreviousMillis))
+  {
+    // Read light only if sensor is attached
+    if (isSensorAvailable(sensorBH1750))
     {
-        sensors.requestTemperatures();
-        float wtemp = sensors.getTempCByIndex(0);
-        dsTemperature = wtemp;
-        txtWater = String(dsTemperature,1);
-        water="Water "+String(dsTemperature,1)+"C";
-        Serial.println(water);
-    }
-    drawDisplay(air.c_str(), hum.c_str(), water.c_str());
-
-    // Publish data to thingspeak.com over MQTT
-    const unsigned long currentMillis = millis();
-    if (publishInterval <= (currentMillis - sensorPreviousMillis))
-    {
-        sensorPreviousMillis = currentMillis;
-        mqttpublish(txtTemperature, txtHumidity, txtWater);
+        txtLight = readLight();
+        Serial.println("Light "+txtLight+" Lux");
     }
 
-    // Read data from the sensor every 3 seconds
-    delay(sensorInterval);
+    sensorPreviousMillis = currentMillis;
+    mqttpublish(txtTemperature, txtHumidity, txtWater, txtLight);
+  }
+
+  // Read data from the sensor every 3 seconds
+  delay(sensorInterval);
 }
