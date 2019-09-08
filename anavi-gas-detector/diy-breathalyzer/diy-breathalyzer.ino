@@ -1,3 +1,16 @@
+/**
+ * "The Breathanalyzer"
+ *
+ * This Arduino sketch is for a fun hobby project for adults:
+ * do it yourselft breathalyzer with Lego parts, MQ-3 gas sensor,
+ * mini OLED I2C SSD1306 display, ANAVI Gas Detector and male to
+ * female jumper wires.
+ *
+ * MQ-3 is not very accurate and needs calibration. This is a
+ * fun project, it is NOT a professional and reliable breathalyzer.
+ * Drink responsibly. Never drink and drive.
+ */
+
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
 // For OLED display
@@ -48,17 +61,20 @@ void detectAlcohol()
   // the conductivity will be higher
   int conductivity = round(((float)breath/1023)*100);
 
+  // MQ-3 is not very accurate. The proper threshold point should be determined
+  // after considering the temperature and humidity influence and testing in the
+  // particular environment.
   String state = "Sober";
-  if (breath <= 200)
+  if (breath <= 300)
   {
     setColor(LOW, LOW, HIGH);
   }
-  else if (breath <= 350)
+  else if (breath <= 450)
   {
     state="on 1-2 beers";
     setColor(LOW, HIGH, LOW);
   }
-  else if (breath <= 500)
+  else if (breath <= 600)
   {
     state="Drunk!";
     setColor(HIGH, LOW, LOW);
