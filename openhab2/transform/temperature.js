@@ -7,10 +7,10 @@ var celsius = true;
 		if (false === celsius) {
 			// Convert temperature in Fahrenheit
 			temperature = temperature * 9 / 5 + 32;
-			return temperature + "°F";
+			return temperature + "F";
 		}
 		else {
-			return temperature + "°C";
+			return temperature + "C";
 		}
 	}
 	catch (err) {
