@@ -8,7 +8,7 @@
 
 #define LED_PIN1    12
 #define LED_PIN2    14
-#define NUM_LEDS    15
+#define NUM_LEDS    10
 #define BRIGHTNESS  64
 #define LED_TYPE    WS2812
 #define COLOR_ORDER GRB
@@ -85,7 +85,7 @@ void loop()
   }
   else if(APDS9960_RIGHT == gesture)
   {
-    if (15 > currentPosition)
+    if (NUM_LEDS > currentPosition)
     {
       Serial.println("Go right!");
       currentPosition += 1;
