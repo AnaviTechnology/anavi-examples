@@ -75,9 +75,11 @@ void setup()
   if(!apds.begin())
   {
     Serial.println("ERROR: Failed to initialize gesture sensor! Please check your wiring.");
+    drawDisplay("APDS-9960", "ERROR", "NO SENSOR");
   }
   else {
     Serial.println("Gesture sensor initialized.");
+    drawDisplay("APDS-9960", "Initialized", "");
     gestureSensorDetected = true;
     //gesture mode will be entered once proximity mode senses something close
     apds.enableProximity(true);
