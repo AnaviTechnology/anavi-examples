@@ -95,11 +95,15 @@ void loop()
         if (0 < sensors.getDeviceCount())
         {
             sensors.requestTemperatures();
-            float wtemp = sensors.getTempCByIndex(0);
-            dsTemperature = wtemp;
-            water="Water "+String(dsTemperature,1)+"C";
-            Serial.println(water);
+            for (int ds=0; ds < sensors.getDeviceCount(); ds++)
+            {
+              float wtemp = sensors.getTempCByIndex(ds);
+              dsTemperature = wtemp;
+              water="Water "+ String(ds) + ": "+String(dsTemperature,1)+"C";
+              Serial.println(water);
+            }
         }
+        // Show on the display only the value from the last DS18B20 sensor
         drawDisplay(air.c_str(), hum.c_str(), water.c_str());
     }
 }
