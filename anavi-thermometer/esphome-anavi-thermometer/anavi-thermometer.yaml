@@ -1,0 +1,120 @@
+esphome:
+  name: anavi_thermometer
+  platform: ESP8266
+  board: esp12e
+
+wifi:
+  ssid: "SET-YOUR-WIFI"
+  password: "SET-YOUR-WIFI-PASSWORD"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Anavi Thermometer"
+    password: "yhr8PZ0rwFUC"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# When no client connects to the native API within 5 minutes a
+# watchdog kicks in and reboots the device. Therefore by default
+# the Home Assistant API is disabled. Enabled it only if you will
+# use it.
+
+#api:
+#  password: "test123"
+
+ota:
+  password: "test123"
+
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+  scan: False
+
+font:
+  - file: 'arial.ttf'
+    id: font1
+    size: 12
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    lambda: |-
+      it.print(0, 0, id(font1), "ANAVI Thermometer");
+      if (id(DHT22temperature).has_state()) {
+        it.printf(0, 24, id(font1),"Air: %.1fC", id(DHT22temperature).state);
+      }
+      if (id(DHT22humidity).has_state()) {
+        it.printf(0, 36, id(font1),"Humidity: %.1f%%", id(DHT22humidity).state);
+      }
+      if (id(ds18b20).has_state()) {
+        it.printf(0, 48, id(font1),"Water: %.1fC", id(ds18b20).state);
+      }
+
+apds9960:
+  address: 0x39
+  update_interval: 60s
+
+dallas:
+  - pin: GPIO12
+
+# There are some known ESPHome issue with DHT22 therefore the
+# model has been explicitly configured. For more details have a
+# look at the notes in the documentation and the reported issues:
+# https://github.com/esphome/issues/issues/792
+# https://esphome.io/components/sensor/dht.html
+
+sensor:
+  - platform: dht
+    pin: GPIO2
+    model: AM2302
+    temperature:
+      id: DHT22temperature
+      name: "Temperature"
+    humidity:
+      id: DHT22humidity
+      name: "Humidity"
+    update_interval: 20s
+
+  - platform: bh1750
+    name: "BH1750 Illuminance"
+    address: 0x23
+    measurement_time: 69
+    update_interval: 5s
+
+  - platform: bmp085
+    temperature:
+      name: "BMP180 Temperature"
+    pressure:
+      name: "BMP180 Pressure"
+    update_interval: 10s
+
+  - platform: htu21d
+    temperature:
+      name: "HTU21D Temperature"
+    humidity:
+      name: "HTU21D Humidity"
+    update_interval: 10s
+
+  - platform: dallas
+    index: 0
+    id: ds18b20
+    name: "Water Temperature"
+
+# There are known "ESP8266 Various Connection Issues" when
+# the binary sensor is enabled. It affects ANAVI Thermometer
+# therefore by default apds9960 is disabled:
+# https://github.com/esphome/issues/issues/455
+# However, below is an example how to enabled it if needed:
+
+#  - platform: apds9960
+#    type: CLEAR
+#    name: "APDS9960 Clear Channel"
+
+#binary_sensor:
+#  - platform: apds9960
+#    direction: UP
+#    name: "APDS960 Up Movement"

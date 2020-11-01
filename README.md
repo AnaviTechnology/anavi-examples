@@ -141,3 +141,30 @@ git clone https://github.com/adafruit/Adafruit_Python_BMP.git
 cd Adafruit_Python_BMP
 sudo python setup.py install
 ```
+
+## ESPHome
+
+[ESPHome](https://esphome.io/) is a system to control your ESP8266/ESP32 by simple yet powerful configuration files and control them remotely through Home Automation systems.
+
+An example ESPHome configuration is available for ANAVI Thermometer. Follow the steps below to install it through the command-line:
+
+* Install ESPHome
+
+```
+pip3 install esphome
+```
+
+* Download the example
+
+```
+git clone https://github.com/AnaviTechnology/anavi-examples.git
+```
+
+* Set your WiFi credentials at `anavi-thermometer/esphome-anavi-thermometer/anavi-thermometer.yaml`
+
+* Compile and flash the firmware. Follow the on-screen instructions. Press the RESET button on ANAVI Thermometer before powering ANAVI Thermometer and hold it until the firmware upload complete. Power cycle ANAVI Thermometer after flashing ESPHome:
+
+```
+cd anavi-thermometer/esphome-anavi-thermometer
+esphome anavi-thermometer.yaml run
+```
