@@ -61,9 +61,9 @@ display:
         it.printf(0, 48, id(font1),"Water: %.1fC", id(ds18b20).state);
       }
 
-apds9960:
-  address: 0x39
-  update_interval: 60s
+#apds9960:
+#  address: 0x39
+#  update_interval: 60s
 
 dallas:
   - pin: GPIO12
@@ -99,12 +99,15 @@ sensor:
       name: "BMP180 Pressure"
     update_interval: 10s
 
-  - platform: htu21d
-    temperature:
-      name: "HTU21D Temperature"
-    humidity:
-      name: "HTU21D Humidity"
-    update_interval: 10s
+# By default HTU21D I2C sensor module is disabled because it is
+# not included in any of the kits of ANAVI Thermometer.
+
+#  - platform: htu21d
+#    temperature:
+#      name: "HTU21D Temperature"
+#    humidity:
+#      name: "HTU21D Humidity"
+#    update_interval: 10s
 
   - platform: dallas
     index: 0
