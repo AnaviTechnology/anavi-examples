@@ -28,6 +28,13 @@ logger:
 ota:
   password: "test123"
 
+# Please note that if an I2C sensor module is not attached ESPHome
+# will report an error and the status LED will be blinking rapidly.
+# To avoid this case either disable the status LED or any I2C
+# sensor module that you don't plan to attach.
+status_led:
+  pin: GPIO16
+
 i2c:
   sda: GPIO4
   scl: GPIO5
