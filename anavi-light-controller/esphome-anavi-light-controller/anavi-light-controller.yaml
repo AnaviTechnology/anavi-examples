@@ -1,0 +1,112 @@
+esphome:
+  name: anavi_light_controller
+  platform: ESP8266
+  board: esp12e
+
+wifi:
+  ssid: "SET-YOUR-WIFI"
+  password: "SET-YOUR-WIFI-PASSWORD"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "ANAVI Light Controller"
+    password: "opensource"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# When no client connects to the native API within 5 minutes a
+# watchdog kicks in and reboots the device. Therefore by default
+# the Home Assistant API is disabled. Enabled it only if you will
+# use it.
+
+api:
+  password: "opensource"
+
+ota:
+  password: "opensource"
+
+# Please note that if an I2C sensor module is not attached ESPHome
+# will report an error and the status LED will be blinking rapidly.
+# To avoid this case either disable the status LED or any I2C
+# sensor module that you don't plan to attach.
+status_led:
+  pin: GPIO16
+
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+  scan: False
+
+#apds9960:
+#  address: 0x39
+#  update_interval: 60s
+
+# There are some known ESPHome issue with DHT22 therefore the
+# model has been explicitly configured. For more details have a
+# look at the notes in the documentation and the reported issues:
+# https://github.com/esphome/issues/issues/792
+# https://esphome.io/components/sensor/dht.html
+
+sensor:
+
+  - platform: bh1750
+    name: "BH1750 Illuminance"
+    address: 0x23
+    measurement_time: 69
+    update_interval: 5s
+
+  - platform: bmp085
+    temperature:
+      name: "BMP180 Temperature"
+    pressure:
+      name: "BMP180 Pressure"
+    update_interval: 10s
+
+  - platform: htu21d
+    temperature:
+      name: "HTU21D Temperature"
+    humidity:
+      name: "HTU21D Humidity"
+    update_interval: 10s
+
+# There are known "ESP8266 Various Connection Issues" when
+# the binary sensor is enabled. It affects ANAVI Light Controller
+# therefore by default apds9960 is disabled:
+# https://github.com/esphome/issues/issues/455
+# However, below is an example how to enabled it if needed:
+
+#  - platform: apds9960
+#    type: CLEAR
+#    name: "APDS9960 Clear Channel"
+
+#binary_sensor:
+#  - platform: apds9960
+#    direction: UP
+#    name: "APDS960 Up Movement"
+
+light:
+  - platform: rgb
+    name: "ANAVI Light Controller"
+    red: output_component1
+    green: output_component2
+    blue: output_component3
+
+# Example output entry
+output:
+  - platform: esp8266_pwm
+    id: output_component1
+    pin: GPIO12
+    max_power: 80%
+
+  - platform: esp8266_pwm
+    id: output_component2
+    pin: GPIO13
+    max_power: 80%
+
+  - platform: esp8266_pwm
+    id: output_component3
+    pin: GPIO14
+    max_power: 80%
