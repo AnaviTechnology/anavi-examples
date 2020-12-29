@@ -1,2 +1,8 @@
 anavi-door-phat/buzzer/c/beep
 anavi-door-phat/buzzer/c/starwars
+anavi-thermometer/esphome-anavi-thermometer/anavi_thermometer/
+anavi-thermometer/esphome-anavi-thermometer/.esphome/
+anavi-light-controller/esphome-anavi-light-controller/anavi_light_controller/
+anavi-light-controller/esphome-anavi-light-controller/.esphome/
+anavi-miracle-controller/esphome-anavi-miracle-controller/anavi_miracle_controller/
+anavi-miracle-controller/esphome-anavi-miracle-controller/.esphome/
