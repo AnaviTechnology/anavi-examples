@@ -10,8 +10,8 @@
 				compatible = "gpio-keys";
 				autorepeat;
 				button-26 {
-					label = "A";
-					linux,code = <30>;
+					label = "Mute";
+					linux,code = <113>;
 					gpios = <&gpio 26 1>;
 				};
 			};
