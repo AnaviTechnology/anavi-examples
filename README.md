@@ -168,3 +168,39 @@ git clone https://github.com/AnaviTechnology/anavi-examples.git
 cd anavi-thermometer/esphome-anavi-thermometer
 esphome anavi-thermometer.yaml run
 ```
+
+## ANAVI Smiley
+
+### Device Tree Overlay
+
+Follow the steps below to compile and use anavi-smiley.dts as a sample device tree overlay configuration that shows how to configure button as volume mute, LED1 to indicated CPU activity and LED2 the heartbeat
+
+* On Raspberry Pi OS, install device tree compiler:
+
+```
+sudo apt update
+sudo apt install -y device-tree-compiler
+```
+
+* Download the examples and compile device tree overlay:
+
+```
+dtc -I dts -O dtb -o anavi-smiley.dtbo anavi-smiley.dts
+```
+
+* Copy the dtbo file to `/boot/overlays/`:
+
+```
+sudo cp anavi-smiley.dtbo /boot/overlays/
+```
+
+* Manually enable the device tree overlay in /boot/config.txt:
+
+```
+dtoverlay=anavi-smiley
+gpio=26=pu
+```
+
+* Reboot 
+
+Linux key codes are as defined in `/usr/include/linux/input-event-codes.h`.
