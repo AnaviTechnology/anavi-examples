@@ -23,10 +23,20 @@ unsigned long motionTime = 0;
 void setup()
 {
 	pinMode(PWM, OUTPUT);
-	analogWrite(PWM, 0);
 	pinMode(BUT, INPUT_PULLUP);
 	currentButtonState = digitalRead(BUT);
 	pinMode(PIR, INPUT_PULLUP);
+  digitalWrite(PIR, LOW);
+
+  //give the sensor some time to calibrate
+  for(int iter = 0; iter < 30; iter++)
+  {
+    analogWrite(PWM, (iter*4));
+    delay(1000);
+  }
+  // Turn off the lights at startup
+  analogWrite(PWM, 0);
+  delay(50);
 }
 
 void loop()
