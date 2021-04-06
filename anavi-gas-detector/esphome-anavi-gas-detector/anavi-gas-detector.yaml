@@ -1,0 +1,122 @@
+esphome:
+  name: anavi_gas_detector
+  platform: ESP8266
+  board: esp12e
+
+wifi:
+  ssid: "SET-YOUR-WIFI"
+  password: "SET-YOUR-WIFI-PASSWORD"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Anavi Gas Detector"
+    password: "yhr8PZ0rwFUC"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# When no client connects to the native API within 5 minutes a
+# watchdog kicks in and reboots the device. Therefore by default
+# the Home Assistant API is disabled. Enabled it only if you will
+# use it.
+
+#api:
+#  password: "test123"
+
+ota:
+  password: "test123"
+
+# Please note that if an I2C sensor module is not attached ESPHome
+# will report an error and the status LED will be blinking rapidly.
+# To avoid this case either disable the status LED or any I2C
+# sensor module that you don't plan to attach.
+status_led:
+  pin: GPIO16
+
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+  scan: False
+
+font:
+  - file: 'arial.ttf'
+    id: font1
+    size: 12
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    lambda: |-
+      it.print(0, 0, id(font1), "ANAVI Gas Detector");
+      if (id(HTU21Dtemperature).has_state()) {
+        it.printf(0, 24, id(font1),"Air: %.1fC", id(HTU21Dtemperature).state);
+      }
+      if (id(HTU21Dhumidity).has_state()) {
+        it.printf(0, 36, id(font1),"Humidity: %.1f%%", id(HTU21Dhumidity).state);
+      }
+      if (id(MQsensor).has_state()) {
+        it.printf(0, 48, id(font1),"Conductivity: %.0f%%", id(MQsensor).state);
+      }
+
+#apds9960:
+#  address: 0x39
+#  update_interval: 60s
+
+sensor:
+
+  - platform: bh1750
+    name: "BH1750 Illuminance"
+    address: 0x23
+    measurement_time: 69
+    update_interval: 5s
+
+  - platform: bmp085
+    temperature:
+      name: "BMP180 Temperature"
+    pressure:
+      name: "BMP180 Pressure"
+    update_interval: 10s
+
+  - platform: htu21d
+    temperature:
+      id: HTU21Dtemperature
+      name: "Temperature"
+    humidity:
+      id: HTU21Dhumidity
+      name: "Humidity"
+    update_interval: 10s
+
+  - platform: adc
+    id: MQsensor
+    pin: A0
+    name: "Conductivity"
+    update_interval: 3s
+    unit_of_measurement: "%"
+    filters:
+      - median:
+          window_size: 7
+          send_every: 4
+          send_first_at: 1
+      - calibrate_linear:
+        - 0.00 -> 0.00
+        - 1.00 -> 100.00
+      - lambda: if (x < 1) return 0; else return (x);
+    accuracy_decimals: 0
+
+# There are known "ESP8266 Various Connection Issues" when
+# the binary sensor is enabled. It affects ANAVI Gas Detector
+# therefore by default apds9960 is disabled:
+# https://github.com/esphome/issues/issues/455
+# However, below is an example how to enabled it if needed:
+
+#  - platform: apds9960
+#    type: CLEAR
+#    name: "APDS9960 Clear Channel"
+
+#binary_sensor:
+#  - platform: apds9960
+#    direction: UP
+#    name: "APDS960 Up Movement"
