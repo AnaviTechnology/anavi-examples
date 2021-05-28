@@ -1,53 +1,79 @@
-#!/usr/bin/python
-# coding=utf-8
-
-import RPi.GPIO as GPIO
+import signal
+import sys
+import time
 import spidev
+import RPi.GPIO as GPIO
 
-# Pin 29 on Raspberry Pi corresponds to GPIO 21
-SENSOR0 = 29
-# Pin 31 on Raspberry Pi corresponds to GPIO 22
-SENSOR1 = 31
+# Pin 15 on Raspberry Pi corresponds to GPIO 22
+LED1 = 15
+# Pin 16 on Raspberry Pi corresponds to GPIO 23
+LED2 = 16
 
+spi_ch = 0
 
-# read SPI data from MCP3002 chip
-def get_adc(channel):
-    # Only 2 channels 0 and 1 else return -1
-    if channel > 1 or channel < 0:
-        return -1
+# Enable SPI
+spi = spidev.SpiDev(0, spi_ch)
+spi.max_speed_hz = 1200000
 
-    # Send start bit, sgl/diff, odd/sign, MSBF
-    # channel = 0 sends 0000 0001 1000 0000 0000 0000
-    # channel = 1 sends 0000 0001 1100 0000 0000 0000
-    # sgl/diff = 1; odd/sign = channel; MSBF = 0
-    r = spi.xfer2([1, (2 + channel) << 6, 0])
-
-    # spi.xfer2 returns same number of 8 bit bytes
-    # as sent. In this case, 3 - 8 bit bytes are returned
-    # We must then parse out the correct 10 bit byte from
-    # the 24 bits returned. The following line discards
-    # all bits but the 10 data bits from the center of
-    # the last 2 bytes: XXXX XXXX - XXXX DDDD - DDDD DDXX
-    ret = ((r[1] & 31) << 6) + (r[2] >> 2)
-    return ret
-
-
+# to use Raspberry Pi board pin numbers
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
-GPIO.setup(SENSOR0, GPIO.OUT)
-GPIO.setup(SENSOR1, GPIO.OUT)
 
-spi = spidev.SpiDev()
-spi.open(0, 0)
+# set up GPIO output channel
+GPIO.setup(LED1, GPIO.OUT)
+GPIO.setup(LED2, GPIO.OUT)
 
-# Turn on sensors
-GPIO.output(SENSOR0, 1)
-GPIO.output(SENSOR1, 1)
+def close(signal, frame):
+    GPIO.output(LED1, 0)
+    GPIO.output(LED2, 0)
+    sys.exit(0)
 
-# Read data from the soil moisture sensors
-print(get_adc(0))
-print(get_adc(1))
+signal.signal(signal.SIGINT, close)
 
-# Turn off sensors
-# GPIO.output(SENSOR0, 0)
-# GPIO.output(SENSOR1, 0)
+def get_adc(channel):
+
+    # Make sure ADC channel is 0 or 1
+    if channel != 0:
+        channel = 1
+
+    # Construct SPI message
+    #  First bit (Start): Logic high (1)
+    #  Second bit (SGL/DIFF): 1 to select single mode
+    #  Third bit (ODD/SIGN): Select channel (0 or 1)
+    #  Fourth bit (MSFB): 0 for LSB first
+    #  Next 12 bits: 0 (don't care)
+    msg = 0b11
+    msg = ((msg << 1) + channel) << 5
+    msg = [msg, 0b00000000]
+    reply = spi.xfer2(msg)
+
+    # Construct single integer out of the reply (2 bytes)
+    adc = 0
+    for n in reply:
+        adc = (adc << 8) + n
+
+    # Last bit (0) is not part of ADC value, shift to remove it
+    adc = adc >> 1
+
+    # Calculate voltage form ADC value
+    # considering the soil moisture sensor is working at 5V
+    voltage = (5 * adc) / 1024
+
+    return voltage
+
+if __name__ == '__main__':
+    # Report the channel 0 and channel 1 voltages to the terminal
+    try:
+        while True:
+            adc_0 = get_adc(0)
+            adc_1 = get_adc(1)
+            print("Soil Moisture Sensor 1:", round(adc_0, 2), "V Soil Moisture Sensor 2:", round(adc_1, 2), "V")
+            GPIO.output(LED1, 1)
+            GPIO.output(LED2, 0)
+            time.sleep(0.2)
+            GPIO.output(LED1, 0)
+            GPIO.output(LED2, 1)
+            time.sleep(0.2)
+
+    finally:
+        GPIO.cleanup()
