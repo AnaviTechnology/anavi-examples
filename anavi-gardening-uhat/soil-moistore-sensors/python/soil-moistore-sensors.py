@@ -30,6 +30,12 @@ def close(signal, frame):
 
 signal.signal(signal.SIGINT, close)
 
+def valmap(value, istart, istop, ostart, ostop):
+    value = ostart + (ostop - ostart) * ((value - istart) / (istop - istart))
+    if value > ostop:
+       value = ostop
+    return value
+
 def get_adc(channel):
 
     # Make sure ADC channel is 0 or 1
@@ -67,7 +73,17 @@ if __name__ == '__main__':
         while True:
             adc_0 = get_adc(0)
             adc_1 = get_adc(1)
-            print("Soil Moisture Sensor 1:", round(adc_0, 2), "V Soil Moisture Sensor 2:", round(adc_1, 2), "V")
+            sensor1 = round(adc_0, 2)
+            if sensor1 < 0.5:
+                moisture1 = 0
+            else:
+                moisture1 = round(valmap(sensor1, 5, 3.5, 0, 100), 0)
+            sensor2 = round(adc_1, 2)
+            if sensor2 < 0.5:
+                moisture2 = 0
+            else:
+                moisture2 = round(valmap(sensor2, 5, 3.5, 0, 100), 0)
+            print("Soil Moisture Sensor 1:", moisture1, "% Soil Moisture Sensor 2:", moisture2, "%")
             GPIO.output(LED1, 1)
             GPIO.output(LED2, 0)
             time.sleep(0.2)
