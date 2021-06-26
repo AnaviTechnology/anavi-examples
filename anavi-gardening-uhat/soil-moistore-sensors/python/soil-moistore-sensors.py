@@ -84,12 +84,12 @@ if __name__ == '__main__':
             else:
                 moisture2 = round(valmap(sensor2, 5, 3.5, 0, 100), 0)
             print("Soil Moisture Sensor 1:", moisture1, "% Soil Moisture Sensor 2:", moisture2, "%")
-            GPIO.output(LED1, 1)
-            GPIO.output(LED2, 0)
-            time.sleep(0.2)
-            GPIO.output(LED1, 0)
-            GPIO.output(LED2, 1)
-            time.sleep(0.2)
-
+            if moisture1 < 40 or moisture2 < 40:
+                GPIO.output(LED1, 1)
+                GPIO.output(LED2, 0)
+            else:
+                GPIO.output(LED1, 0)
+                GPIO.output(LED2, 1)
+            time.sleep(0.5)
     finally:
         GPIO.cleanup()
