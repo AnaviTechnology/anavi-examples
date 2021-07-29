@@ -8,3 +8,5 @@ anavi-light-controller/esphome-anavi-light-controller/anavi_light_controller/
 anavi-light-controller/esphome-anavi-light-controller/.esphome/
 anavi-miracle-controller/esphome-anavi-miracle-controller/anavi_miracle_controller/
 anavi-miracle-controller/esphome-anavi-miracle-controller/.esphome/
+anavi-noisy/c/anavi-noisy
+anavi-noisy/c/anavi-noisy.o
