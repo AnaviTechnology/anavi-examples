@@ -1,16 +1,24 @@
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+#include <i2c/smbus.h>
+
 #include "BH1750.h"
 
 int getLux(int fd)
 {
-	wiringPiI2CWrite(fd,0x10);
-	delay(LUXDELAY);
-	int word = wiringPiI2CReadReg16(fd, 0x00);
-	if (-1 == word)
+	if (0 > ioctl(fd, I2C_SLAVE, BH1750_ADDR))
 	{
 		return -1;
 	}
-	int lux=((word & 0xff00)>>8) | ((word & 0x00ff)<<8);
+
+	__u8 reg = 0x10;
+	char buf[2];
+	//__s32 res = i2c_smbus_read_word_data(fd, reg);
+	__s32 res = i2c_smbus_read_i2c_block_data(fd, 0x10, 4, buf);
+	if (0 > res)
+	{
+		return -1;
+	}
+	int lux = (buf[1] + (256 * buf[0])) / 1.2;
 	return lux;
 }

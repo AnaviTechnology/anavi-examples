@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "BH1750.h"
 
 int main()
 {
-	int fd = wiringPiI2CSetup(BH1750_ADDR);
+	char filename[20];
+	snprintf(filename, 19, "/dev/i2c-%d", 1);
+	int fd = open(filename, O_RDWR);
 	if (0 > fd)
 	{
 		fprintf(stderr, "ERROR: Unable to access BH1750 sensor module: %s\n", strerror (errno));
