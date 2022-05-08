@@ -1,48 +1,45 @@
 #include <unistd.h>
-
-#include "wiringPi.h"
-#include "wiringPiI2C.h"
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+#include <i2c/smbus.h>
 
 #include "HTU21D.h"
+
+int reset(int fd)
+{
+	if (0 > ioctl(fd, I2C_SLAVE, HTU21D_I2C_ADDR))
+	{
+		return -1;
+	}
+	i2c_smbus_write_byte(fd, HTU21D_RESET);
+	return 0;
+}
 
 // Get temperature
 int getTemperature(int fd, double *temperature)
 {
-	unsigned char buf [4];
-	if (0 < wiringPiI2CWrite(fd, HTU21D_TEMP))
+	reset(fd);
+
+	char buf[3];
+	__s32 res = i2c_smbus_read_i2c_block_data(fd, HTU21D_TEMP, 3, buf);
+	if (0 > res)
 	{
 		return -1;
 	}
-	delay(100);
-	if (-1 == read(fd, buf, 3))
-	{
-		return -1;
-	}
-	unsigned int temp = (buf [0] << 8 | buf [1]) & 0xFFFC;
-	// Convert sensor reading into temperature.
-	// See page 14 of the datasheet
-	double tSensorTemp = temp / 65536.0;
-	*temperature = -46.85 + (175.72 * tSensorTemp);
+	*temperature = -46.85 + 175.72 * (buf[0] * 256 + buf[1]) / 65536;
 	return 0;
 }
 
 // Get humidity
 int getHumidity(int fd, double *humidity)
 {
-	unsigned char buf [4];
-	if (0 < wiringPiI2CWrite(fd, HTU21D_HUMID))
+	reset(fd);
+	char buf[3];
+	__s32 res = i2c_smbus_read_i2c_block_data(fd, HTU21D_HUMID, 3, buf);
+	if (0 > res)
 	{
 		return -1;
 	}
-	delay(100);
-	if (-1 == read(fd, buf, 3))
-	{
-		return -1;
-	}
-  	unsigned int humid = (buf [0] << 8 | buf [1]) & 0xFFFC;
-	// Convert sensor reading into humidity.
-	// See page 15 of the datasheet
-	double tSensorHumid = humid / 65536.0;
-	*humidity = -6.0 + (125.0 * tSensorHumid);
+	*humidity = -6 + 125 * (buf[0] * 256 + buf[1]) / 65536.0;
 	return 0;
 }

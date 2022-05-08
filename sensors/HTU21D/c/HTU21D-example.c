@@ -1,20 +1,20 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <wiringPiI2C.h>
-#include <wiringPi.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "HTU21D.h"
 
 int main()
 {
-	wiringPiSetup();
-	int fd = wiringPiI2CSetup(HTU21D_I2C_ADDR);
-	if ( 0 > fd )
+	char filename[20];
+	snprintf(filename, 19, "/dev/i2c-%d", 1);
+	int fd = open(filename, O_RDWR);
+	if (0 > fd)
 	{
 		fprintf(stderr, "ERROR: Unable to access HTU21D sensor module: %s\n", strerror (errno));
-		exit (-1);
+		exit(-1);
 	}
 
 	// Retrieve temperature and humidity

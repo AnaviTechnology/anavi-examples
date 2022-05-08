@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-I.
 DEPS = 
 OBJ = HTU21D.o HTU21D-example.o
-EXTRA_LIBS=-lwiringPi
+EXTRA_LIBS=-li2c
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
