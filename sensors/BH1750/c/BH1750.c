@@ -11,10 +11,8 @@ int getLux(int fd)
 		return -1;
 	}
 
-	__u8 reg = 0x10;
 	char buf[2];
-	//__s32 res = i2c_smbus_read_word_data(fd, reg);
-	__s32 res = i2c_smbus_read_i2c_block_data(fd, 0x10, 4, buf);
+	__s32 res = i2c_smbus_read_i2c_block_data(fd, 0x10, 2, buf);
 	if (0 > res)
 	{
 		return -1;
