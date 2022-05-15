@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-I.
 DEPS = 
 OBJ = blink.o
-EXTRA_LIBS=-lwiringPi
+EXTRA_LIBS=-lpigpio
 
 %.o: %.c $(DEPS)
 	$(CC) -Wall -c -o $@ $< $(CFLAGS)
