@@ -10,15 +10,15 @@
 
 void terminate()
 {
-	gpioWrite(5, 0);
-	gpioWrite(6, 0);
+	gpioWrite(D1, 0);
+	gpioWrite(D2, 0);
 
 	//Stop DMA, release resources
 	gpioTerminate();
 	exit(0);
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	if (0 > gpioInitialise())
 	{
@@ -27,18 +27,18 @@ int main(int argc, char *argv[])
 	}
 
 	// Set GPIOs to output modes
-	gpioSetMode(5, PI_OUTPUT);
-	gpioSetMode(6, PI_OUTPUT);
+	gpioSetMode(D1, PI_OUTPUT);
+	gpioSetMode(D2, PI_OUTPUT);
 
 	signal(SIGINT, terminate);
 
 	while(1)
 	{
-		gpioWrite(5, 1);
-		gpioWrite(6, 0);
+		gpioWrite(D1, 1);
+		gpioWrite(D2, 0);
 		time_sleep(0.5);
-		gpioWrite(5, 0);
-		gpioWrite(6, 1);
+		gpioWrite(D1, 0);
+		gpioWrite(D2, 1);
 		time_sleep(0.5);
 	}
 
