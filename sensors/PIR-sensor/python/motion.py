@@ -1,18 +1,18 @@
 from gpiozero import MotionSensor
-import time
-import signal
-import sys
-
-def close(signal, frame):
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, close)
-
+from signal import pause
 pir = MotionSensor(4)
-count = 0;
+motion_count = 0
 
-while True:
-    if pir.motion_detected:
-        count += 1
-        print "Motion detected: ", count
-        time.sleep(1)
+def motion_function():
+    global motion_count
+    motion_count += 1
+    print(f'Motion Detected: {motion_count}')
+
+def no_motion_function():
+    print(f'Motion stopped: {motion_count}')
+
+pir.when_motion = motion_function
+pir.when_no_motion = no_motion_function
+
+pause()
+
