@@ -1,6 +1,10 @@
+#if defined(ESP8266)
 #include <FS.h>                   //this needs to be first, or it all crashes and burns...
-
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
+#define pinButton 0
+#else
+#define pinButton D8
+#endif
 
 // For OLED display
 #include <U8g2lib.h>
@@ -9,7 +13,6 @@
 
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
-const int pinButton = 0;
 const int i2cDisplayAddress = 0x3c;
 
 void drawDisplay(const char *line1, const char *line2 = "", const char *line3 = "")
@@ -73,6 +76,6 @@ void loop()
   {
     Serial.println("Rebooting...");
     // Restart the board
-    ESP.restart(); 
+    ESP.restart();
   }
 }
