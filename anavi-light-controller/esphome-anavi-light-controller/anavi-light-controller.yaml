@@ -1,7 +1,12 @@
+---
 esphome:
-  name: anavi_light_controller
-  platform: ESP8266
+  name: anavi-light-controller
+
+esp8266:
   board: esp12e
+  restore_from_flash: true
+
+
 
 wifi:
   ssid: "SET-YOUR-WIFI"
@@ -26,6 +31,7 @@ api:
   password: "opensource"
 
 ota:
+  platform: esphome
   password: "opensource"
 
 # Please note that if an I2C sensor module is not attached ESPHome
@@ -55,7 +61,6 @@ sensor:
   - platform: bh1750
     name: "BH1750 Illuminance"
     address: 0x23
-    measurement_time: 69
     update_interval: 5s
 
   - platform: bmp085
