@@ -9,7 +9,12 @@
 #define FASTLED_ESP8266_RAW_PIN_ORDER
 #include <FastLED.h>
 
-#define LED_PIN    10
+#if CONFIG_IDF_TARGET_ESP32C6
+  #define LED_PIN 18
+#else
+  #define LED_PIN 10
+#endif
+
 #define NUM_LEDS    10
 #define BRIGHTNESS  64
 #define LED_TYPE    WS2812
