@@ -71,6 +71,11 @@ void setup()
 
 void loop()
 {
+    if (false == digitalRead(pinButton))
+    {
+        ESP.reset();
+    }
+
     const unsigned long currentMillis = millis();
     if (sensorInterval <= (currentMillis - sensorPreviousMillis))
     {
