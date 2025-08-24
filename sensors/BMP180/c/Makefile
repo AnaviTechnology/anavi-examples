@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-I.
 DEPS =
 OBJ = BMP180.o BMP180-example.o
-EXTRA_LIBS=-lwiringPi -lm
+EXTRA_LIBS=-li2c -lm
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

@@ -1,12 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
+#include <linux/i2c-dev.h>
+#include <i2c/smbus.h>
 #include <math.h>
 #include <unistd.h>
 
 #include "BMP180.h"
+
+int oversampling;
+
+short int ac1, ac2, ac3, b1, b2, mb, mc, md;
+unsigned short int ac4, ac5, ac6;
 
 // Read two words from the BMP085 and supply it as a 16 bit integer
 int i2cReadInt(int fd, int address);
@@ -15,8 +20,16 @@ int begin(int fd)
 {
 	oversampling = BMP180_ULTRAHIGHRES;
 
-	if (0x55 != wiringPiI2CReadReg8(fd, 0xD0))
+	// Check BMP180 device ID
+	int id = i2c_smbus_read_byte_data(fd, 0xD0);
+	if (id < 0)
 	{
+		perror("I2C read failed");
+		return -1;
+	}
+	if (id != 0x55)
+	{
+		// Device not found
 		return -1;
 	}
 
@@ -47,39 +60,60 @@ int computeB5(unsigned int UT)
 
 unsigned int readRawTemperature(int fd)
 {
-	wiringPiI2CWriteReg8(fd, BMP180_CONTROL, BMP180_READTEMPCMD);
+	// Write the read temperature command to the control register
+	if (i2c_smbus_write_byte_data(fd, BMP180_CONTROL, BMP180_READTEMPCMD) < 0)
+	{
+		perror("I2C write failed");
+		return 0xFFFF;
+	}
 	// Wait at least 4.5ms
-	delay(5);
+	usleep(4500);
 	return (unsigned int)i2cReadInt(fd, BMP180_TEMPDATA);
 }
 
 uint32_t readRawPressure(int fd)
 {
-	wiringPiI2CWriteReg8(fd, BMP180_CONTROL, BMP180_READPRESSURECMD + (oversampling << 6));
+	// Write the read pressure command with oversampling
+	if (i2c_smbus_write_byte_data(fd, BMP180_CONTROL, BMP180_READPRESSURECMD + (oversampling << 6)) < 0)
+	{
+		perror("I2C write failed");
+		return 0xFFFFFFFF;
+	}
 
-	if (oversampling == BMP180_ULTRALOWPOWER)
+	// Wait for conversion based on oversampling
+	switch (oversampling)
 	{
-		delay(5);
+		case BMP180_ULTRALOWPOWER:
+				usleep(5000);	 // 5 ms
+				break;
+		case BMP180_STANDARD:
+				usleep(8000);	 // 8 ms
+				break;
+		case BMP180_HIGHRES:
+				usleep(14000);	// 14 ms
+				break;
+		default: // BMP180_ULTRAHIGHRES
+				usleep(26000);	// 26 ms
+				break;
 	}
-	else if (oversampling == BMP180_STANDARD)
-	{
-		delay(8);
-	}
-	else if (oversampling == BMP180_HIGHRES)
-	{
-		delay(14);
-	}
-	else
-	{
-		delay(26);
-	}
+
+	// Read the raw 16-bit pressure value
 	int raw = i2cReadInt(fd, BMP180_PRESSUREDATA);
 
+	// Read the third byte (LSB) of pressure
+	int lsb = i2c_smbus_read_byte_data(fd, BMP180_PRESSUREDATA + 2);
+	if (lsb < 0)
+	{
+		perror("I2C read failed");
+		return 0xFFFFFFFF; // indicate error
+	}
+
+	// Combine MSB, LSB, and XLSB according to BMP180 datasheet
 	raw <<= 8;
-	raw |= wiringPiI2CReadReg8(fd, BMP180_PRESSUREDATA+2);
+	raw |= lsb;
 	raw >>= (8 - oversampling);
 
-	return raw;
+	return (uint32_t)raw;
 }
 
 int32_t readPressure(int fd)
@@ -150,10 +184,17 @@ float readAltitude(int fd, float sealevelPressure)
 }
 
 // Read two words from the BMP085 and supply it as a 16 bit integer
-int i2cReadInt(int fd, int address)
+int i2cReadInt(int fd, int reg)
 {
-	int res = wiringPiI2CReadReg16(fd, address);
-	// Convert result to 16 bits and swap bytes
-	res = ((res<<8) & 0xFF00) | ((res>>8) & 0xFF);
+	// Read 16-bit word from the device register
+	int res = i2c_smbus_read_word_data(fd, reg);
+	if (res < 0)
+	{
+		// return negative value on error
+		return res;
+	}
+
+	// Swap bytes to match BMP085 big-endian format
+	res = ((res << 8) & 0xFF00) | ((res >> 8) & 0x00FF);
 	return res;
 }
